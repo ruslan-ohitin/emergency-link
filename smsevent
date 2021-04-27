@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Event handler for SMSTools3
+#
+# Ruslan Ohitin ruslan.ohitin@gmail.com 2021
+#
+
+# $1 is the type of the event wich can be SENT, RECEIVED, FAILED or REPORT.
+# $2 is the filename of the sms.
+# $3 is the message id. Only used for SENT messages with status report.
+
+if [ "$1" = "RECEIVED" ]; then
+    # Get sender's phone number
+    # xargs removes spaces before and after value as a side efect
+    FROM=$(grep "From: " $2 | cut -f 2 -d ":" | xargs)
+
+    # Search for line with only one word - CONNECT or HANGUP
+    # and run script for manage emergency link 
+    if grep -q -i "^connect$" $2; then
+        sudo emergency-link CONNECT $FROM
+
+    elif grep -q -i "^hangup$" $2; then
+        sudo emergency-link HANGUP $FROM
+
+    fi
+fi

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Ruslan Ohitin ruslan.ohitin@gmail.com 2021
+# Script to start og hangup emergency link by 3G modem
+#
+# run as root (with sudo)
+# 	emergency-link CONNECT|HANGUP <phone number>
+#
+# Allowed phone numbers need to be listed in file /usr/local/etc/emergency-link.conf 
+# one number at a line without starting spaces.
+#
+
+# First parameter in upper case
+ACTION=${1^^}
+
+# Phone number of person who send text demanding action on emergency link
+PHONE=$2
+
+CONF=/usr/local/etc/emergency-link.conf
+
+if [ ! -f $CONF ]; then
+    logger -s "Configuration file not found: $CONF"
+    exit
+fi
+
+if ! grep -s "^$PHONE" $CONF; then
+    logger -s "Unauthorized access to emergency connecttion by $PHONE"
+    exit
+fi
+
+if [ "$ACTION" == "CONNECT" ]; then
+    logger -s "Emergency connection requested by $PHONE"
+    wvdial &
+    sendsms $PHONE "Emergency connection started"
+
+elif [ "$ACTION" == "HANGUP" ]; then
+    logger -s "Hangup emergency connection requested by $PHONE"
+    killall wvdial
+    sendsms $PHONE "Emergency connection hanged up"
+
+fi
+
