@@ -24,7 +24,7 @@ if [ ! -f $CONF ]; then
 fi
 
 if ! grep -s "^$PHONE" $CONF; then
-    logger -s "Unauthorized access to emergency connecttion by $PHONE"
+    logger -s "Unauthorized access to emergency connection by $PHONE"
     exit
 fi
 
